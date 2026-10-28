@@ -8,6 +8,11 @@ namespace API.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController : ControllerBase
 {
+    private static readonly string[] Summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
     private readonly DataContext _context;
 
     public WeatherForecastController(DataContext context)
@@ -22,13 +27,21 @@ public class WeatherForecastController : ControllerBase
         {
             Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = "Sample"
+            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         }).ToArray();
     }
 
     [HttpPost]
     public void Post()
     {
-        // We'll use this in the next activity
+        var forecast = new WeatherForecast
+        {
+            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
+            TemperatureC = Random.Shared.Next(-20, 55),
+            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+        };
+
+        _context.WeatherForecasts.Add(forecast);
+        _context.SaveChanges();
     }
 }
