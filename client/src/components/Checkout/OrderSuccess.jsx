@@ -6,35 +6,55 @@ import "./OrderSuccess.css";
 function OrderSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const orderId = searchParams.get("orderId");
+
   const [order, setOrder] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(Boolean(orderId));
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const orderId = searchParams.get("orderId");
+    if (!orderId) return;
 
-    if (!orderId) {
-      setError("No order ID found");
-      setLoading(false);
-      return;
-    }
+    let active = true;
 
     const fetchOrder = async () => {
       try {
         setLoading(true);
         const orderData = await getOrderById(orderId);
+        if (!active) return;
         setOrder(orderData);
         setError(null);
       } catch (err) {
+        if (!active) return;
         setError("Failed to load order details. Please contact support.");
         console.error(err);
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchOrder();
-  }, [searchParams]);
+
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
+
+  if (!orderId) {
+    return (
+      <div className="order-success-container">
+        <div className="error-state">
+          <h2>Unable to Load Order</h2>
+          <p>No order ID found</p>
+          <button onClick={() => navigate("/")} className="home-button">
+            Return to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
